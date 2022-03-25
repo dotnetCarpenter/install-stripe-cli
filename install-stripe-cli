@@ -170,16 +170,16 @@ checkSum () {
 
 installWithRPM () {
 	echo "Installing with rpm"
-	# sudo rpm --install $STRIPE_CLI
+	sudo rpm --install $STRIPE_CLI
 }
 installWithDPKG () {
 	echo "Installing with dpkg"
-	# sudo dpkg --install $STRIPE_CLI
+	sudo dpkg --install $STRIPE_CLI
 }
 installWithSymlink () {
 	echo "Symlinking with target: $(pwd)/stripe"
-	# tar --extract --file $STRIPE_CLI
-	# ln --force --symbolic $(pwd)/stripe /usr/local/bin/
+	tar --extract --file $STRIPE_CLI
+	ln --force --symbolic $(pwd)/stripe /usr/local/bin/
 }
 
 install () {
@@ -199,10 +199,6 @@ showChangelog () {
 
 ## main program flow ##
 
-# echo "SHOW_CHANGELOG: $SHOW_CHANGELOG"
-# echo "SHOW_PROMPT: $SHOW_PROMPT"
-# echo "INSTALLATION_METHOD: $INSTALLATION_METHOD"
-
 downloadChecksums # download stripe-linux-checksums.txt
 setStripeCLI   # set $STRIPE_CLI to one of the files defined in stripe-linux-checksums.txt
 downloadStripeCLI # download stripe-cli
@@ -211,24 +207,3 @@ install # install either deb, rpm or default to linux_x86_64.tar.gz
 if [[ $SHOW_CHANGELOG == 'true' ]]; then
 	showChangelog
 fi
-
-# echo "STRIPE_CLI: $STRIPE_CLI"
-
-# createPrompt () {
-# 	echo "Size of array: $#"
-#   echo "$@"
-#   select option; do # in "$@" is the default
-#     if [ "$REPLY" -eq "$#" ];
-#     then
-#       echo "Exiting..."
-#       break;
-#     elif [ 1 -le "$REPLY" ] && [ "$REPLY" -le $(($#)) ];
-#     then
-#       echo "You selected $option which is option $REPLY"
-#       break;
-#     else
-#       echo "Invalid. Select any number from 1-$#"
-#     fi
-#   done
-# }
-# createPrompt "${available_files[@]}"
