@@ -1,0 +1,234 @@
+#!/usr/bin/env bash
+# -*- coding: utf-8 -*-
+
+set -e
+
+readonly CHECKSUM_PROGRAM=sha256sum
+readonly GITHUB_RELEASE_DOWNLOAD_URL='https://github.com/stripe/stripe-cli/releases/latest/download/'
+readonly GITHUB_RELEASE_JSON_URL='https://api.github.com/repos/stripe/stripe-cli/releases/latest'
+readonly STRIPE_LINUX_CHECKSUMS_FILE='stripe-linux-checksums.txt'
+readonly STRIPE_LINUX_CHECKSUMS_URL="$GITHUB_RELEASE_DOWNLOAD_URL$STRIPE_LINUX_CHECKSUMS_FILE"
+readonly RPM='rpm'
+readonly DEB='deb'
+readonly TAR='gz'
+
+usage () {
+	local filename="$0"
+
+	if [[ -n $1 ]]; then
+		echo "$1 option is not recognized."
+	fi
+
+	printf "Usage:\n$filename [-h] [-lp] [-i usr|deb|rpm]\n"
+	printf "\n\tOptions:\n"
+	printf "\t\t-h, --help\t\t\tPrint usage and exit.\n"
+	printf "\t\t-i, --install=deb|rpm|usr\tChoose how to install. Negates --prompt.\n"
+	printf "\t\t-l, --changelog\t\t\tDisplay the changelog. Requires 'jq' to be installed.\n"
+	printf "\t\t-p, --prompt\t\t\tAsk which file to install.\n"
+
+	printf "\n\tExamples:\n"
+
+	printf "\n\t  $filename\n\n"
+	printf "\twill download stripe-cli to your current folder and automagically\n"
+	printf "\tinstall either the .deb or .rpm file with your package manager.\n"
+	printf "\tOr symlink it to /usr/local/bin if neither dpkg or rpm was found\n"
+	printf "\ton your system.\n"
+
+	printf "\n\t  $filename -i usr\n\n"
+	printf "\twill download stripe-cli to your current folder and symlink it from /usr/local/bin\n"
+	printf "\t --install usr  option does not require 'sudo'.\n"
+
+	printf "\n\t  $filename -li deb\n\n"
+	printf "\twill download stripe-cli to your current folder, install it with dpkg and\n"
+	printf "\tprint the changelog.\n"
+
+	printf "\n\tExit Status:\n"
+	printf "\tReturns success unless an invalid option is given or an error occurs.\n"
+	printf "\tError code 1:\tInvalid option.\n"
+	printf "\tError code 2:\t$STRIPE_LINUX_CHECKSUMS_FILE failed to download.\n"
+	printf "\tError code 4:\tInvalid --install option value.\n"
+	printf "\tError code 8:\tCould not figure out which file to install.\n"
+}
+
+### optional flags parsing ###
+# Adapted from https://stackoverflow.com/a/30026641/205696
+# Default behavior
+SHOW_PROMPT='false'
+SHOW_CHANGELOG='false'
+INSTALLATION_METHOD= # only used with --install or -i option
+
+# Transform long options to short ones
+for arg in "$@"; do
+	shift
+	case "$arg" in
+		"--help")      set -- "$@" "-h";;
+		"--changelog") set -- "$@" "-l";;
+		"--prompt")    set -- "$@" "-p";;
+		"--install")   set -- "$@" "-i";;
+		"--"*)         usage ${arg}; exit 1;;
+		*)             set -- "$@" "$arg"
+	esac
+done
+
+# Parse short options
+OPTIND=1
+while getopts "hlpi:" opt
+do
+	case "$opt" in
+		"h") usage >&2; exit 0;;
+		"l") SHOW_CHANGELOG='true';;
+		"p") SHOW_PROMPT='true';;
+		"i") INSTALLATION_METHOD="${OPTARG}";;
+		"?") usage >&2; exit 1;;
+	esac
+done
+
+shift $(expr $OPTIND - 1) # remove options from positional parameters
+
+readonly $SHOW_CHANGELOG
+readonly $SHOW_PROMPT
+readonly $INSTALLATION_METHOD
+
+### end optional flags parsing ###
+
+
+downloadChecksums () {
+	if [ -a $STRIPE_LINUX_CHECKSUMS_FILE ]; then
+		rm --force $STRIPE_LINUX_CHECKSUMS_FILE
+	fi
+
+	wget --quiet $STRIPE_LINUX_CHECKSUMS_URL
+}
+
+assertChecksumFile () {
+	if [[ ! -a $STRIPE_LINUX_CHECKSUMS_FILE ]]; then
+		echo "$STRIPE_LINUX_CHECKSUMS_FILE is missing - aborting..."
+		exit 2
+	fi
+}
+
+setStripeCliFromFileExtension () {
+	local -n files=$1
+	local file_extension=$2
+
+	for STRIPE_CLI in ${files[@]}; do
+		if [[ $STRIPE_CLI == *.$file_extension ]]; then
+			break;
+		fi
+	done
+}
+
+setStripeCLI () {
+	# figure out which file we should download
+	assertChecksumFile
+
+	local available_files=($(cat $STRIPE_LINUX_CHECKSUMS_FILE | cut --delimiter=" "  --fields=3))
+
+	if [[ -n $INSTALLATION_METHOD ]]; then
+		case $INSTALLATION_METHOD in
+			rpm) setStripeCliFromFileExtension available_files $RPM;;
+			deb) setStripeCliFromFileExtension available_files $DEB;;
+			usr) setStripeCliFromFileExtension available_files $TAR;;
+			*)
+				echo "Supplied installation method '$INSTALLATION_METHOD' is not supported - aborting..."
+				exit 4;;
+		esac
+	elif [[ $SHOW_PROMPT == 'true' ]]; then
+		echo "Choose which file to install:"
+
+		select STRIPE_CLI in ${available_files[@]}; do
+			if [[ "$REPLY" =~ ^[0-9]+$ ]] && [ "$REPLY" -le $((${#available_files[@]})) ]; then
+				break;
+			else
+				echo "Invalid. Select any number from 1-${#available_files[@]}"
+			fi
+		done
+	else
+		if [[ -n $(which rpm) ]]; then
+			setStripeCliFromFileExtension available_files $RPM
+		elif [[ -n $(which dpkg) ]]; then
+			setStripeCliFromFileExtension available_files $DEB
+		else
+			setStripeCliFromFileExtension available_files $TAR
+		fi
+	fi
+}
+
+downloadStripeCLI () {
+	if [ -a $STRIPE_CLI ]; then
+		rm --force $STRIPE_CLI
+	fi
+
+	wget --quiet $GITHUB_RELEASE_DOWNLOAD_URL$STRIPE_CLI
+}
+
+checkSum () {
+	assertChecksumFile
+
+	$CHECKSUM_PROGRAM --ignore-missing --quiet --check $STRIPE_LINUX_CHECKSUMS_FILE
+}
+
+installWithRPM () {
+	echo "Installing with rpm"
+	# sudo rpm --install $STRIPE_CLI
+}
+installWithDPKG () {
+	echo "Installing with dpkg"
+	# sudo dpkg --install $STRIPE_CLI
+}
+installWithSymlink () {
+	echo "Symlinking with target: $(pwd)/stripe"
+	# tar --extract --file $STRIPE_CLI
+	# ln --force --symbolic $(pwd)/stripe /usr/local/bin/
+}
+
+install () {
+	case "${STRIPE_CLI##*.}" in
+		$RPM) installWithRPM;;
+		$DEB) installWithDPKG;;
+		$TAR) installWithSymlink;;
+		*)
+			echo "Could not figure out which file to install - aborting..."
+			exit 8;;
+	esac
+}
+
+showChangelog () {
+	curl --silent $GITHUB_RELEASE_JSON_URL | jq '.body' | xargs printf
+}
+
+## main program flow ##
+
+# echo "SHOW_CHANGELOG: $SHOW_CHANGELOG"
+# echo "SHOW_PROMPT: $SHOW_PROMPT"
+# echo "INSTALLATION_METHOD: $INSTALLATION_METHOD"
+
+downloadChecksums # download stripe-linux-checksums.txt
+setStripeCLI   # set $STRIPE_CLI to one of the files defined in stripe-linux-checksums.txt
+downloadStripeCLI # download stripe-cli
+checkSum # check that the executable has not been tampered with
+install # install either deb, rpm or default to linux_x86_64.tar.gz
+if [[ $SHOW_CHANGELOG == 'true' ]]; then
+	showChangelog
+fi
+
+# echo "STRIPE_CLI: $STRIPE_CLI"
+
+# createPrompt () {
+# 	echo "Size of array: $#"
+#   echo "$@"
+#   select option; do # in "$@" is the default
+#     if [ "$REPLY" -eq "$#" ];
+#     then
+#       echo "Exiting..."
+#       break;
+#     elif [ 1 -le "$REPLY" ] && [ "$REPLY" -le $(($#)) ];
+#     then
+#       echo "You selected $option which is option $REPLY"
+#       break;
+#     else
+#       echo "Invalid. Select any number from 1-$#"
+#     fi
+#   done
+# }
+# createPrompt "${available_files[@]}"
