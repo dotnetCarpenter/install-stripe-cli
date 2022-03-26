@@ -34,6 +34,9 @@ readonly STRIPE_LINUX_CHECKSUMS_URL="$GITHUB_RELEASE_DOWNLOAD_URL$STRIPE_LINUX_C
 readonly RPM='rpm'
 readonly DEB='deb'
 readonly TAR='gz'
+# TODO: write all dependencies in array below. E.g. jq, wget, curl, cat, cut, rm, tar etc.
+# readonly DEPENDENCIES=()
+# Then we can write it in usage, disable changelog if jq is not installed etc.
 
 usage () {
 	local filename="$0"
@@ -46,7 +49,7 @@ usage () {
 	fi
 
 	printf "\n\tOptions:\n"
-	printf "\t\t-h, --help\t\t\tPrint usage and exit. -h for short usage and --help for long\n"
+	printf "\t\t-h, --help\t\t\tPrint usage and exit. -h for short usage and --help for long.\n"
 	printf "\t\t-i, --install=deb|rpm|usr\tChoose how to install. Negates --prompt.\n"
 	printf "\t\t-l, --changelog\t\t\tDisplay the changelog. Requires 'jq' to be installed.\n"
 	printf "\t\t-p, --prompt\t\t\tAsk which file to install.\n"
@@ -162,6 +165,7 @@ setStripeCliFromFileExtension () {
 			break;
 		fi
 	done
+	# FIXME: should error out if $file_extension doesn't match any file
 }
 
 setStripeCLI () {
