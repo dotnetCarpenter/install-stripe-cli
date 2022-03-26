@@ -274,6 +274,6 @@ setStripeCLI      # set $STRIPE_CLI to one of the files defined in stripe-linux-
 downloadStripeCLI # download stripe-cli
 checkSum          # check that stripe-cli has not been tampered with
 install           # install either *.deb, *.rpm or *.tar.gz
-if [[ $SHOW_CHANGELOG == 'true' ]]; then
-	showChangelog
-fi
+[ $SHOW_CHANGELOG = 'true' ] && showChangelog
+# ☝️ if $SHOW_CHANGELOG is 'true' then download and display changelog
+# from https://api.github.com/repos/stripe/stripe-cli/releases/latest
