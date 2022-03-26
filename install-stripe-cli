@@ -100,8 +100,8 @@ for arg in "$@"; do
 		'--silent')    set -- "$@" "-s";;
 		"--"* | "-")
 		               echo "$0: $arg option is not recognized."
-									 usage
-									 exit 1;;
+		               usage
+		               exit 1;;
 		*)             set -- "$@" "$arg"
 	esac
 done
@@ -117,13 +117,13 @@ do
 		i) INSTALLATION_METHOD="${OPTARG}";;
 		s) BE_SILENT='true';;
 		?)
-			echo "$0: $1 option is not recognized."
-			usage
-			exit 1;;
+		  echo "$0: $1 option is not recognized."
+		  usage
+		  exit 1;;
 		:)
-			echo "$0: Must supply an argument to -$OPTARG."
-			usage
-      exit 1;;
+		  echo "$0: Must supply an argument to -$OPTARG."
+		  usage
+		  exit 1;;
 	esac
 done
 
