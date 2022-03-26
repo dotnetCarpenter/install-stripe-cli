@@ -1,6 +1,29 @@
 #!/usr/bin/env bash
 # -*- coding: utf-8 -*-
 
+# MIT License
+
+# Copyright (c) 2022 Jon Ege Ronnenberg
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+
 set -e
 
 readonly CHECKSUM_PROGRAM=sha256sum
@@ -13,18 +36,20 @@ readonly DEB='deb'
 readonly TAR='gz'
 
 usage () {
+	# TODO: if -h only show usage without options, examples etc.
 	local filename="$0"
 
 	if [[ -n $1 ]]; then
 		echo "$1 option is not recognized."
 	fi
 
-	printf "Usage:\n$filename [-h] [-lp] [-i usr|deb|rpm]\n"
+	printf "Usage:\n$filename [-h] [-lps] [-i usr|deb|rpm]\n"
 	printf "\n\tOptions:\n"
 	printf "\t\t-h, --help\t\t\tPrint usage and exit.\n"
 	printf "\t\t-i, --install=deb|rpm|usr\tChoose how to install. Negates --prompt.\n"
 	printf "\t\t-l, --changelog\t\t\tDisplay the changelog. Requires 'jq' to be installed.\n"
 	printf "\t\t-p, --prompt\t\t\tAsk which file to install.\n"
+	printf "\t\t-s, --silent\t\t\tOnly print errors, when installing.\n"
 
 	printf "\n\tExamples:\n"
 
@@ -42,12 +67,14 @@ usage () {
 	printf "\twill download stripe-cli to your current folder, install it with dpkg and\n"
 	printf "\tprint the changelog.\n"
 
-	printf "\n\tExit Status:\n"
+	printf "\n\tExit Status:\n\n"
 	printf "\tReturns success unless an invalid option is given or an error occurs.\n"
 	printf "\tError code 1:\tInvalid option.\n"
 	printf "\tError code 2:\t$STRIPE_LINUX_CHECKSUMS_FILE failed to download.\n"
 	printf "\tError code 4:\tInvalid --install option value.\n"
 	printf "\tError code 8:\tCould not figure out which file to install.\n"
+
+	printf "\n Coded with 💓 by @dotnetCarpenter - MIT LICENSE © 2022\n"
 }
 
 ### optional flags parsing ###
@@ -55,16 +82,18 @@ usage () {
 # Default behavior
 SHOW_PROMPT='false'
 SHOW_CHANGELOG='false'
-INSTALLATION_METHOD= # only used with --install or -i option
+INSTALLATION_METHOD='' # only used with --install or -i option
+BE_SILENT='false'
 
 # Transform long options to short ones
 for arg in "$@"; do
 	shift
 	case "$arg" in
-		"--help")      set -- "$@" "-h";;
-		"--changelog") set -- "$@" "-l";;
-		"--prompt")    set -- "$@" "-p";;
-		"--install")   set -- "$@" "-i";;
+		'--help')      set -- "$@" "-h";;
+		'--changelog') set -- "$@" "-l";;
+		'--prompt')    set -- "$@" "-p";;
+		'--install')   set -- "$@" "-i";;
+		'--silent')    set -- "$@" "-s";;
 		"--"*)         usage ${arg}; exit 1;;
 		*)             set -- "$@" "$arg"
 	esac
@@ -72,14 +101,18 @@ done
 
 # Parse short options
 OPTIND=1
-while getopts "hlpi:" opt
+while getopts ":hlpsi:" opt
 do
 	case "$opt" in
-		"h") usage >&2; exit 0;;
-		"l") SHOW_CHANGELOG='true';;
-		"p") SHOW_PROMPT='true';;
-		"i") INSTALLATION_METHOD="${OPTARG}";;
-		"?") usage >&2; exit 1;;
+		h) usage; exit 0;;
+		l) SHOW_CHANGELOG='true';;
+		p) SHOW_PROMPT='true';;
+		i) INSTALLATION_METHOD="${OPTARG}";;
+		s) BE_SILENT='true';;
+		?) usage $1; exit 1;;
+		:)
+			echo "$0: Must supply an argument to -$OPTARG." >&2
+      exit 1;;
 	esac
 done
 
@@ -87,7 +120,8 @@ shift $(expr $OPTIND - 1) # remove options from positional parameters
 
 readonly $SHOW_CHANGELOG
 readonly $SHOW_PROMPT
-readonly $INSTALLATION_METHOD
+# readonly $INSTALLATION_METHOD # using readonly on a variable that has no content, triggers bash debug mode
+readonly $BE_SILENT
 
 ### end optional flags parsing ###
 
@@ -134,7 +168,7 @@ setStripeCLI () {
 				exit 4;;
 		esac
 	elif [[ $SHOW_PROMPT == 'true' ]]; then
-		echo "Choose which file to install:"
+		echo "Please, choose which file to install:"
 
 		select STRIPE_CLI in ${available_files[@]}; do
 			if [[ "$REPLY" =~ ^[0-9]+$ ]] && [ "$REPLY" -le $((${#available_files[@]})) ]; then
@@ -169,15 +203,27 @@ checkSum () {
 }
 
 installWithRPM () {
-	echo "Installing with rpm"
-	sudo rpm --install $STRIPE_CLI
+	if [[ $BE_SILENT == 'true' ]]; then
+		sudo rpm --quiet --install $STRIPE_CLI 2>&1 1>/dev/null
+	else
+		echo "Installing with rpm"
+		sudo rpm --verbose --hash --install $STRIPE_CLI
+	fi
 }
+
 installWithDPKG () {
-	echo "Installing with dpkg"
-	sudo dpkg --install $STRIPE_CLI
+	if [[ $BE_SILENT == 'true' ]]; then
+		export DEBIAN_FRONTEND=noninteractive
+		sudo dpkg --install $STRIPE_CLI 2>&1 1>/dev/null
+	else
+		echo "Installing with dpkg"
+		sudo dpkg --install $STRIPE_CLI
+	fi
 }
 installWithSymlink () {
-	echo "Symlinking with target: $(pwd)/stripe"
+	if [[ $BE_SILENT == 'false' ]]; then
+		echo "Symlinking with target: $(pwd)/stripe"
+	fi
 	tar --extract --file $STRIPE_CLI
 	ln --force --symbolic $(pwd)/stripe /usr/local/bin/
 }
@@ -200,10 +246,10 @@ showChangelog () {
 ## main program flow ##
 
 downloadChecksums # download stripe-linux-checksums.txt
-setStripeCLI   # set $STRIPE_CLI to one of the files defined in stripe-linux-checksums.txt
+setStripeCLI      # set $STRIPE_CLI to one of the files defined in stripe-linux-checksums.txt
 downloadStripeCLI # download stripe-cli
-checkSum # check that the executable has not been tampered with
-install # install either deb, rpm or default to linux_x86_64.tar.gz
+checkSum          # check that stripe-cli has not been tampered with
+install           # install either *.deb, *.rpm or *.tar.gz
 if [[ $SHOW_CHANGELOG == 'true' ]]; then
 	showChangelog
 fi
