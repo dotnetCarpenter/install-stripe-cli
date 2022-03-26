@@ -38,6 +38,10 @@ readonly TAR='gz'
 # readonly DEPENDENCIES=()
 # Then we can write it in usage, disable changelog if jq is not installed etc.
 
+echoerr () {
+	printf "\033[0;31m%s\n\033[0m" "$*" >&2
+}
+
 usage () {
 	local filename="$0"
 	local long_help="${1:-false}"
@@ -102,8 +106,8 @@ for arg in "$@"; do
 		'--install')   set -- "$@" "-i";;
 		'--silent')    set -- "$@" "-s";;
 		"--"* | "-")
-		               echo "$0: $arg option is not recognized."
-		               usage
+		               echoerr "$0: $arg option is not recognized."
+		               usage >&2
 		               exit 1;;
 		*)             set -- "$@" "$arg"
 	esac
@@ -120,12 +124,12 @@ do
 		i) INSTALLATION_METHOD="${OPTARG}";;
 		s) BE_SILENT='true';;
 		?)
-		  echo "$0: $1 option is not recognized."
-		  usage
+		  echoerr "$0: $1 option is not recognized."
+		  usage >&2
 		  exit 1;;
 		:)
-		  echo "$0: Must supply an argument to -$OPTARG."
-		  usage
+		  echoerr "$0: Must supply an argument to -$OPTARG."
+		  usage >&2
 		  exit 1;;
 	esac
 done
@@ -180,7 +184,7 @@ setStripeCLI () {
 			deb) setStripeCliFromFileExtension available_files $DEB;;
 			usr) setStripeCliFromFileExtension available_files $TAR;;
 			*)
-				echo "Supplied installation method '$INSTALLATION_METHOD' is not supported - aborting..."
+				echoerr "Supplied installation method '$INSTALLATION_METHOD' is not supported - aborting..."
 				exit 4;;
 		esac
 	elif [[ $SHOW_PROMPT == 'true' ]]; then
@@ -190,7 +194,7 @@ setStripeCLI () {
 			if [[ "$REPLY" =~ ^[0-9]+$ ]] && [ "$REPLY" -le $((${#available_files[@]})) ]; then
 				break;
 			else
-				echo "Invalid. Select any number from 1-${#available_files[@]}"
+				echoerr "Invalid. Select any number from 1-${#available_files[@]}"
 			fi
 		done
 	else
@@ -250,7 +254,7 @@ install () {
 		$DEB) installWithDPKG;;
 		$TAR) installWithSymlink;;
 		*)
-			echo "Could not figure out which file to install - aborting..."
+			echoerr "Could not figure out which file to install - aborting..."
 			exit 8;;
 	esac
 }
