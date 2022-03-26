@@ -80,7 +80,7 @@ usage () {
 	printf "\tprint the changelog.\n"
 
 	printf "\n\tExit Status:\n\n"
-	printf "\tReturns success unless an invalid option is given or an error occurs.\n"
+	printf "\tReturns success unless an invalid option is given or an error occurs.\n\n"
 	printf "\tError code 1:\tInvalid option.\n"
 	printf "\tError code 2:\t$STRIPE_LINUX_CHECKSUMS_FILE failed to download.\n"
 	printf "\tError code 4:\tInvalid --install option value.\n"
@@ -147,7 +147,6 @@ readonly $BE_SILENT
 readonly $LONG_HELP
 
 ### end optional flags parsing ###
-
 
 downloadChecksums () {
 	if [ -a $STRIPE_LINUX_CHECKSUMS_FILE ]; then
@@ -266,6 +265,7 @@ install () {
 showChangelog () {
 	curl --silent $GITHUB_RELEASE_JSON_URL | jq '.body' | xargs printf
 }
+
 
 ## main program flow ##
 
