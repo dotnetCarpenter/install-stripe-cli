@@ -39,7 +39,11 @@ readonly TAR='gz'
 # Then we can write it in usage, disable changelog if jq is not installed etc.
 
 echoerr () {
-	printf "\033[0;31m%s\n\033[0m" "$*" >&2
+	if [[ $(tty -s) -eq 0 ]]; then
+		printf "\033[0;31m%s\n\033[0m" "$*" >&2
+	else
+		printf "%s\n" "$*" >&2
+	fi
 }
 
 usage () {
