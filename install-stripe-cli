@@ -159,7 +159,7 @@ downloadChecksums () {
 
 assertChecksumFile () {
 	if [[ ! -a $STRIPE_LINUX_CHECKSUMS_FILE ]]; then
-		echo "$STRIPE_LINUX_CHECKSUMS_FILE is missing - aborting..."
+		echoerr "$STRIPE_LINUX_CHECKSUMS_FILE is missing - aborting..."
 		exit 2
 	fi
 }
