@@ -57,11 +57,11 @@ usage () {
 	fi
 
 	printf "\n\tOptions:\n"
-	printf "\t\t-h, --help\t\t\tPrint usage and exit. -h for short usage and --help for long.\n"
-	printf "\t\t-i, --install=deb|rpm|usr\tChoose how to install. Negates --prompt.\n"
-	printf "\t\t-l, --changelog\t\t\tDisplay the changelog. Requires 'jq' to be installed.\n"
-	printf "\t\t-p, --prompt\t\t\tAsk which file to install.\n"
-	printf "\t\t-s, --silent\t\t\tOnly print errors, when installing.\n"
+	printf "\t-h, --help\t\t\tPrint usage and exit. -h for short usage and --help for long.\n"
+	printf "\t-i, --install=deb|rpm|usr\tChoose how to install. Negates --prompt.\n"
+	printf "\t-l, --changelog\t\t\tDisplay the changelog. Requires 'jq' to be installed.\n"
+	printf "\t-p, --prompt\t\t\tAsk which file to install.\n"
+	printf "\t-s, --silent\t\t\tOnly print errors, when installing.\n"
 
 	printf "\n\tExamples:\n"
 
@@ -72,8 +72,8 @@ usage () {
 	printf "\ton your system.\n"
 
 	printf "\n\t  $filename -i usr\n\n"
-	printf "\twill download stripe-cli to your current folder and symlink it from /usr/local/bin\n"
-	printf "\t --install usr  option does not require 'sudo'.\n"
+	printf "\twill download stripe-cli to your current folder and symlink it from\n"
+	printf "\t/usr/local/bin.  '--install usr'  option does not require 'sudo'.\n"
 
 	printf "\n\t  $filename -li deb\n\n"
 	printf "\twill download stripe-cli to your current folder, install it with dpkg and\n"
