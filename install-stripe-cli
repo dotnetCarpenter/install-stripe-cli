@@ -24,7 +24,7 @@
 # SOFTWARE.
 
 
-set -e
+set -e -o pipefail
 
 readonly CHECKSUM_PROGRAM=sha256sum
 readonly GITHUB_RELEASE_DOWNLOAD_URL='https://github.com/stripe/stripe-cli/releases/latest/download/'
@@ -36,14 +36,15 @@ readonly DEB='deb'
 readonly TAR='gz'
 
 usage () {
-	# TODO: if -h only show usage without options, examples etc.
 	local filename="$0"
+	local long_help="${1:-false}"
 
-	if [[ -n $1 ]]; then
-		echo "$1 option is not recognized."
+	printf "Usage:\n$filename [-h|--help] [-lps] [-i usr|deb|rpm]\n"
+
+	if [[ $long_help == 'false' ]]; then
+		exit 0
 	fi
 
-	printf "Usage:\n$filename [-h] [-lps] [-i usr|deb|rpm]\n"
 	printf "\n\tOptions:\n"
 	printf "\t\t-h, --help\t\t\tPrint usage and exit.\n"
 	printf "\t\t-i, --install=deb|rpm|usr\tChoose how to install. Negates --prompt.\n"
@@ -84,17 +85,23 @@ SHOW_PROMPT='false'
 SHOW_CHANGELOG='false'
 INSTALLATION_METHOD='' # only used with --install or -i option
 BE_SILENT='false'
+LONG_HELP='false'
 
 # Transform long options to short ones
 for arg in "$@"; do
 	shift
 	case "$arg" in
-		'--help')      set -- "$@" "-h";;
+		'--help')
+		               LONG_HELP='true'
+		               set -- "$@" "-h";;
 		'--changelog') set -- "$@" "-l";;
 		'--prompt')    set -- "$@" "-p";;
 		'--install')   set -- "$@" "-i";;
 		'--silent')    set -- "$@" "-s";;
-		"--"*)         usage ${arg}; exit 1;;
+		"--"* | "-")
+		               echo "$0: $arg option is not recognized."
+									 usage
+									 exit 1;;
 		*)             set -- "$@" "$arg"
 	esac
 done
@@ -104,14 +111,18 @@ OPTIND=1
 while getopts ":hlpsi:" opt
 do
 	case "$opt" in
-		h) usage; exit 0;;
+		h) usage $LONG_HELP; exit 0;;
 		l) SHOW_CHANGELOG='true';;
 		p) SHOW_PROMPT='true';;
 		i) INSTALLATION_METHOD="${OPTARG}";;
 		s) BE_SILENT='true';;
-		?) usage $1; exit 1;;
+		?)
+			echo "$0: $1 option is not recognized."
+			usage
+			exit 1;;
 		:)
-			echo "$0: Must supply an argument to -$OPTARG." >&2
+			echo "$0: Must supply an argument to -$OPTARG."
+			usage
       exit 1;;
 	esac
 done
@@ -122,6 +133,7 @@ readonly $SHOW_CHANGELOG
 readonly $SHOW_PROMPT
 # readonly $INSTALLATION_METHOD # using readonly on a variable that has no content, triggers bash debug mode
 readonly $BE_SILENT
+readonly $LONG_HELP
 
 ### end optional flags parsing ###
 
