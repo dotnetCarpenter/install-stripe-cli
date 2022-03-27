@@ -147,13 +147,19 @@ assertChecksumFile () {
 setStripeCliFromFileExtension () {
 	local -n files=$1
 	local file_extension=$2
+	local found='false'
 
 	for STRIPE_CLI in ${files[@]}; do
-		if [[ $STRIPE_CLI == *.$file_extension ]]; then
+		if [ $STRIPE_CLI == *.$file_extension ]; then
+			found='true'
 			break;
 		fi
 	done
-	# FIXME: should error out if $file_extension doesn't match any file
+
+	if [ $found = 'false' ]; then
+		echoError "There is no installation file that ends with .$file_extension - aborting..."
+		exit 8
+	fi
 }
 
 setStripeCLI () {
@@ -171,7 +177,7 @@ setStripeCLI () {
 				echoError "Supplied installation method '$INSTALLATION_METHOD' is not supported - aborting..."
 				exit 4;;
 		esac
-	elif [[ $SHOW_PROMPT == 'true' ]]; then
+	elif [ $SHOW_PROMPT = 'true' ]; then
 		echo "Please, choose which file to install:"
 
 		select STRIPE_CLI in ${available_files[@]}; do
@@ -207,7 +213,7 @@ checkSum () {
 }
 
 installWithRPM () {
-	if [[ $BE_SILENT == 'true' ]]; then
+	if [ $BE_SILENT = 'true' ]; then
 		sudo rpm --quiet --install $STRIPE_CLI 2>&1 1>/dev/null
 	else
 		echo "Installing with rpm"
@@ -216,7 +222,7 @@ installWithRPM () {
 }
 
 installWithDPKG () {
-	if [[ $BE_SILENT == 'true' ]]; then
+	if [ $BE_SILENT = 'true' ]; then
 		export DEBIAN_FRONTEND=noninteractive
 		sudo dpkg --install $STRIPE_CLI 2>&1 1>/dev/null
 	else
@@ -225,7 +231,7 @@ installWithDPKG () {
 	fi
 }
 installWithSymlink () {
-	if [[ $BE_SILENT == 'false' ]]; then
+	if [ $BE_SILENT = 'false' ]; then
 		echo "Symlinking with target: $(pwd)/stripe"
 	fi
 	tar --extract --file $STRIPE_CLI
