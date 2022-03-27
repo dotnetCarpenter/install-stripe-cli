@@ -1,0 +1,5 @@
+stripe
+stripe*.tar.gz
+stripe*.deb
+stripe*.rpm
+stripe-linux-checksums.txt
