@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# -*- coding: utf-8 -*-
+
+# This pre-push hook will only allow `git push` if
+# install-stripe-cli-checksums.txt is up to date.
+
+b2sum --status --check install-stripe-cli-checksums.txt

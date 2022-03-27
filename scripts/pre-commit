@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# -*- coding: utf-8 -*-
+
+# This pre-commit hook will automatically create a new BLAKE2 digest
+# if there is a change to install-stripe-cli and you forgot to run
+# scripts/create-digest.sh.
+# It will also add the newly generated install-stripe-cli-checksums.txt
+# to your commit, so they are in sync.
+
+for filename in $(git diff --cached --name-only HEAD); do
+	if test "$filename" = 'install-stripe-cli' &&
+		! $(b2sum --status --check install-stripe-cli-checksums.txt)
+	then
+		scripts/create-digest.sh
+		git add install-stripe-cli-checksums.txt
+	fi
+done
