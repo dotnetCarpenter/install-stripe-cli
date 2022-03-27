@@ -12,10 +12,13 @@ I wrote [a presentation of `install-stripe-cli`](https://github.com/stripe/strip
 
 ```
 Usage:
-./install-stripe-cli [-h|--help] [-lps] [-i usr|deb|rpm]
+./install-stripe-cli [-h|--help] [-v|--version] [-lps] [-i usr|deb|rpm]
+
+install-stripe-cli version: 1.0.0
 
 Options:
   -h, --help			Print usage and exit. -h for short usage and --help for long.
+  -v, --version			Print version and exit.
   -i, --install=deb|rpm|usr	Choose how to install. Negates --prompt.
   -l, --changelog		Display the changelog. Requires 'jq' to be installed.
   -p, --prompt			Ask which file to install.
