@@ -6,7 +6,7 @@ I wrote [a presentation of `install-stripe-cli`](https://github.com/stripe/strip
 
 - [Installation](#installation)
 - [Usage](#usage)
-- [Trouble shoot](#trouble-shoot)
+- [Questions / Answers](#questions--answers)
 
 
 ## Installation
@@ -70,11 +70,16 @@ Exit Status:
  Coded with 💓 by @dotnetCarpenter - MIT LICENSE © 2022
 ```
 
-## Trouble shoot
+## Questions / Answers
 
 Q: _The wrong deb/rpm package is installed because stripe now has multiple deb and/or rpm files._
 
 A: _Use `./install-stripe-cli --prompt` until a fix is made and please [create an issue](https://github.com/dotnetCarpenter/install-stripe-cli/issues), if one does not exist._
+
+
+Q: _Will `install-stripe-cli` support installing [pacman]'s Arch Linux package?_
+
+A: _Sure. If Stripe will build an Arch Linux package of [stripe-cli]._
 
 
 [a full year]: https://github.com/stripe/stripe-cli/pull/673#issuecomment-1078892697
@@ -83,3 +88,5 @@ A: _Use `./install-stripe-cli --prompt` until a fix is made and please [create a
 [curl]: https://curl.se/
 [xargs]: https://www.gnu.org/software/findutils/xargs/
 [jq]:  https://stedolan.github.io/jq/
+
+[pacman]: https://archlinux.org/pacman/
