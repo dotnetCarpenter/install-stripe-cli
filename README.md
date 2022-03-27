@@ -12,15 +12,15 @@ I wrote [a presentation of `install-stripe-cli`](https://github.com/stripe/strip
 ## Installation
 
 Create a directory where you want to save `install-stripe-cli` and keep the `stripe-cli` installation.
-Copy/Paste the snippet below into your terminal. That will save the latest release of `install-stripe-cli` and print usage if successfull. Requires that [curl], [xargs] and [jq] is installed.
+Copy/Paste the snippet below into your terminal. That will save the latest release of `install-stripe-cli` and print usage if successfull. Requires that [curl], [wget], [xargs] and [jq] is installed.
 
 ```bash
 curl -s https://api.github.com/repos/dotnetcarpenter/install-stripe-cli/tags \
 | jq --raw-output 'sort_by(.name)|last|.commit.sha' \
-| (read sha && echo "https://raw.githubusercontent.com/dotnetcarpenter/install-stripe-cli/$sha/install-stripe-cli") \
-| xargs curl -s --remote-name
-chmod +x install-stripe-cli
-./install-stripe-cli --help
+| (read sha && echo "https://raw.githubusercontent.com/dotnetcarpenter/install-stripe-cli/$sha") \
+| (read url && xargs sh -c "echo $url/install-stripe-cli-checksums.txt && echo $url/install-stripe-cli") \
+| xargs -P 2 wget -q;
+b2sum -c install-stripe-cli-checksums.txt && chmod +x install-stripe-cli && ./install-stripe-cli --help
 ```
 
 ## Usage
@@ -86,7 +86,8 @@ A: _Sure. If Stripe will build an Arch Linux package of [stripe-cli]._
 [stripe-cli]: https://stripe.com/docs/stripe-cli#install
 
 [curl]: https://curl.se/
+[wget]: https://www.gnu.org/software/wget/
 [xargs]: https://www.gnu.org/software/findutils/xargs/
-[jq]:  https://stedolan.github.io/jq/
+[jq]: https://stedolan.github.io/jq/
 
 [pacman]: https://archlinux.org/pacman/
