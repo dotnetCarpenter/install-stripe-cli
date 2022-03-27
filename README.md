@@ -4,9 +4,24 @@ Since it has been [a full year] without an easy way to install and update [strip
 
 I wrote [a presentation of `install-stripe-cli`](https://github.com/stripe/stripe-cli/issues/666#issuecomment-1079704202), that I will continue to link to as long as the presentation is still current with this code base.
 
+- [Installation](#installation)
 - [Usage](#usage)
 - [Trouble shoot](#trouble-shoot)
 
+
+## Installation
+
+Create a directory where you want to save `install-stripe-cli` and keep the `stripe-cli` installation.
+Copy/Paste the snippet below into your terminal. That will save the latest release of `install-stripe-cli` and print usage if successfull. Requires that [curl], [xargs] and [jq] is installed.
+
+```bash
+curl -s https://api.github.com/repos/dotnetcarpenter/install-stripe-cli/tags \
+| jq --raw-output 'sort_by(.name)|last|.commit.sha' \
+| (read sha && echo "https://raw.githubusercontent.com/dotnetcarpenter/install-stripe-cli/$sha/install-stripe-cli") \
+| xargs curl -s --remote-name
+chmod +x install-stripe-cli
+./install-stripe-cli --help
+```
 
 ## Usage
 
@@ -57,10 +72,14 @@ Exit Status:
 
 ## Trouble shoot
 
-Q: _The wrong deb/rpm package is installed because stripe now has multiple deb/rpm files._
+Q: _The wrong deb/rpm package is installed because stripe now has multiple deb and/or rpm files._
 
 A: _Use `./install-stripe-cli --prompt` until a fix is made and please [create an issue](https://github.com/dotnetCarpenter/install-stripe-cli/issues), if one does not exist._
 
 
 [a full year]: https://github.com/stripe/stripe-cli/pull/673#issuecomment-1078892697
 [stripe-cli]: https://stripe.com/docs/stripe-cli#install
+
+[curl]: https://curl.se/
+[xargs]: https://www.gnu.org/software/findutils/xargs/
+[jq]:  https://stedolan.github.io/jq/
