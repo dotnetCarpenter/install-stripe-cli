@@ -29,7 +29,7 @@ b2sum --status -c install-stripe-cli-checksums.txt && chmod +x install-stripe-cl
 Usage:
 ./install-stripe-cli [-h|--help] [-v|--version] [-lps] [-i usr|deb|rpm]
 
-install-stripe-cli version: 1.0.0
+install-stripe-cli version: 1.0.2
 
 Options:
   -h, --help			Print usage and exit. -h for short usage and --help for long.
