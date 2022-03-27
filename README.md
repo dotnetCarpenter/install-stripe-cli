@@ -90,7 +90,8 @@ Since keeping _install-stripe-cli-checksums.txt_ in sync with _install-stripe-cl
 + _pre-push_ will only allow `git push` if _install-stripe-cli-checksums.txt_ is up to date.
 + _pre-commit_ will create a new BLAKE2 digest if there is a change to _install-stripe-cli_ and you forgot to run _scripts/create-digest.sh_. It will also add the newly generated _install-stripe-cli-checksums.txt_ to your commit, so they are in sync.
 
-You need to copy both files into _.git/hooks/_ before they take effect.
+You need to copy both files into _.git/hooks/_ and make them executable, before they take effect.
+
 
 [a full year]: https://github.com/stripe/stripe-cli/pull/673#issuecomment-1078892697
 [stripe-cli]: https://stripe.com/docs/stripe-cli#install
