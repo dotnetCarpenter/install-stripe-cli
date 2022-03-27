@@ -19,7 +19,7 @@ readonly TAR='gz'
 # readonly DEPENDENCIES=()
 # Then we can write it in usage, disable changelog if jq is not installed etc.
 
-echoerr () {
+echoError () {
 	if [ -t 2 ]; then
 		printf "\033[0;31m%s\n\033[0m" "$*" >&2
 	else
@@ -37,35 +37,35 @@ usage () {
 		exit 0
 	fi
 
-	printf "\n\tOptions:\n"
-	printf "\t-h, --help\t\t\tPrint usage and exit. -h for short usage and --help for long.\n"
-	printf "\t-i, --install=deb|rpm|usr\tChoose how to install. Negates --prompt.\n"
-	printf "\t-l, --changelog\t\t\tDisplay the changelog. Requires 'jq' to be installed.\n"
-	printf "\t-p, --prompt\t\t\tAsk which file to install.\n"
-	printf "\t-s, --silent\t\t\tOnly print errors, when installing.\n"
+	printf "\nOptions:\n"
+	printf "  -h, --help\t\t\tPrint usage and exit. -h for short usage and --help for long.\n"
+	printf "  -i, --install=deb|rpm|usr\tChoose how to install. Negates --prompt.\n"
+	printf "  -l, --changelog\t\tDisplay the changelog. Requires 'jq' to be installed.\n"
+	printf "  -p, --prompt\t\t\tAsk which file to install.\n"
+	printf "  -s, --silent\t\t\tOnly print errors, when installing.\n"
 
-	printf "\n\tExamples:\n"
+	printf "\nExamples:\n"
 
 	printf "\n\t  $filename\n\n"
-	printf "\twill download stripe-cli to your current folder and automagically\n"
-	printf "\tinstall either the .deb or .rpm file with your package manager.\n"
-	printf "\tOr symlink it to /usr/local/bin if neither dpkg or rpm was found\n"
-	printf "\ton your system.\n"
+	printf "  will download stripe-cli to your current folder and automagically\n"
+	printf "  install either the .deb or .rpm file with your package manager.\n"
+	printf "  Or symlink it to /usr/local/bin if neither dpkg or rpm was found\n"
+	printf "  on your system.\n"
 
 	printf "\n\t  $filename -i usr\n\n"
-	printf "\twill download stripe-cli to your current folder and symlink it from\n"
-	printf "\t/usr/local/bin.  '--install usr'  option does not require 'sudo'.\n"
+	printf "  will download stripe-cli to your current folder and symlink it from\n"
+	printf "  /usr/local/bin.  '--install usr'  option does not require 'sudo'.\n"
 
 	printf "\n\t  $filename -li deb\n\n"
-	printf "\twill download stripe-cli to your current folder, install it with dpkg and\n"
-	printf "\tprint the changelog.\n"
+	printf "  will download stripe-cli to your current folder, install it with\n"
+	printf "  dpkg and print the changelog.\n"
 
-	printf "\n\tExit Status:\n\n"
-	printf "\tReturns success unless an invalid option is given or an error occurs.\n\n"
-	printf "\tError code 1:\tInvalid option.\n"
-	printf "\tError code 2:\t$STRIPE_LINUX_CHECKSUMS_FILE failed to download.\n"
-	printf "\tError code 4:\tInvalid --install option value.\n"
-	printf "\tError code 8:\tCould not figure out which file to install.\n"
+	printf "\nExit Status:\n\n"
+	printf "  Returns success unless an invalid option is given or an error occurs.\n\n"
+	printf "  Error code 1:  Invalid option.\n"
+	printf "  Error code 2:  $STRIPE_LINUX_CHECKSUMS_FILE failed to download.\n"
+	printf "  Error code 4:  Invalid --install option value.\n"
+	printf "  Error code 8:  Could not figure out which file to install.\n"
 
 	printf "\n Coded with 💓 by @dotnetCarpenter - MIT LICENSE © 2022\n"
 }
@@ -91,7 +91,7 @@ for arg in "$@"; do
 		'--install')   set -- "$@" "-i";;
 		'--silent')    set -- "$@" "-s";;
 		"--"* | "-")
-		               echoerr "$0: $arg option is not recognized."
+		               echoError "$0: $arg option is not recognized."
 		               usage >&2
 		               exit 1;;
 		*)             set -- "$@" "$arg"
@@ -109,11 +109,11 @@ do
 		i) INSTALLATION_METHOD="${OPTARG}";;
 		s) BE_SILENT='true';;
 		?)
-		  echoerr "$0: $1 option is not recognized."
+		  echoError "$0: $1 option is not recognized."
 		  usage >&2
 		  exit 1;;
 		:)
-		  echoerr "$0: Must supply an argument to -$OPTARG."
+		  echoError "$0: Must supply an argument to -$OPTARG."
 		  usage >&2
 		  exit 1;;
 	esac
@@ -139,7 +139,7 @@ downloadChecksums () {
 
 assertChecksumFile () {
 	if [[ ! -a $STRIPE_LINUX_CHECKSUMS_FILE ]]; then
-		echoerr "$STRIPE_LINUX_CHECKSUMS_FILE is missing - aborting..."
+		echoError "$STRIPE_LINUX_CHECKSUMS_FILE is missing - aborting..."
 		exit 2
 	fi
 }
@@ -168,7 +168,7 @@ setStripeCLI () {
 			deb) setStripeCliFromFileExtension available_files $DEB;;
 			usr) setStripeCliFromFileExtension available_files $TAR;;
 			*)
-				echoerr "Supplied installation method '$INSTALLATION_METHOD' is not supported - aborting..."
+				echoError "Supplied installation method '$INSTALLATION_METHOD' is not supported - aborting..."
 				exit 4;;
 		esac
 	elif [[ $SHOW_PROMPT == 'true' ]]; then
@@ -178,7 +178,7 @@ setStripeCLI () {
 			if [[ "$REPLY" =~ ^[0-9]+$ ]] && [ "$REPLY" -le $((${#available_files[@]})) ]; then
 				break;
 			else
-				echoerr "Invalid. Select any number from 1-${#available_files[@]}"
+				echoError "Invalid. Select any number from 1-${#available_files[@]}"
 			fi
 		done
 	else
@@ -238,7 +238,7 @@ install () {
 		$DEB) installWithDPKG;;
 		$TAR) installWithSymlink;;
 		*)
-			echoerr "Could not figure out which file to install - aborting..."
+			echoError "Could not figure out which file to install - aborting..."
 			exit 8;;
 	esac
 }
