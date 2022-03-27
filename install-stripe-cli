@@ -9,7 +9,7 @@ set -e -o pipefail
 
 readonly MAJOR=1
 readonly MINOR=0
-readonly PATCH=0
+readonly PATCH=1
 readonly VERSION_STRING="$(basename $0) version: $MAJOR.$MINOR.$PATCH"
 
 readonly CHECKSUM_PROGRAM=sha256sum
