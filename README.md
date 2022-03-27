@@ -20,7 +20,7 @@ curl -s https://api.github.com/repos/dotnetcarpenter/install-stripe-cli/tags \
 | (read sha && echo "https://raw.githubusercontent.com/dotnetcarpenter/install-stripe-cli/$sha") \
 | (read url && xargs sh -c "echo $url/install-stripe-cli-checksums.txt && echo $url/install-stripe-cli") \
 | xargs -P 2 wget -q;
-b2sum -c install-stripe-cli-checksums.txt && chmod +x install-stripe-cli && ./install-stripe-cli --help
+b2sum --status -c install-stripe-cli-checksums.txt && chmod +x install-stripe-cli && ./install-stripe-cli --help
 ```
 
 ## Usage
