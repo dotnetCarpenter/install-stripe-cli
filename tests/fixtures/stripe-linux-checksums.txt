@@ -1,0 +1,3 @@
+0c45de09a219fdf1ac0233bb51609b11cfb97b5acc57a1d5ef4ee63e7390cb84  stripe_1.8.1_linux_amd64.rpm
+224948411300d9e5c5d626eefe3f48de69b4be2c07bc8458fc1e84f4d1b44fdb  stripe_1.8.1_linux_x86_64.tar.gz
+d880d34fd83f7be05acfe2edcbb7f18dbba9e366688332f2a0f49cd3f091c030  stripe_1.8.1_linux_amd64.deb

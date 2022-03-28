@@ -266,12 +266,14 @@ showChangelog () {
 
 
 ## main program flow ##
-
-downloadChecksums # download stripe-linux-checksums.txt
-setStripeCLI      # set $STRIPE_CLI to one of the files defined in stripe-linux-checksums.txt
-downloadStripeCLI # download stripe-cli
-checkSum          # check that stripe-cli has not been tampered with
-install           # install either *.deb, *.rpm or *.tar.gz
-[ $SHOW_CHANGELOG = 'true' ] && showChangelog
-# ☝️ if $SHOW_CHANGELOG is 'true' then download and display changelog
-# from https://api.github.com/repos/stripe/stripe-cli/releases/latest
+# Call the functions only if the script is executed directly.
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+	downloadChecksums # download stripe-linux-checksums.txt
+	setStripeCLI      # set $STRIPE_CLI to one of the files defined in stripe-linux-checksums.txt
+	downloadStripeCLI # download stripe-cli
+	checkSum          # check that stripe-cli has not been tampered with
+	install           # install either *.deb, *.rpm or *.tar.gz
+	[ $SHOW_CHANGELOG = 'true' ] && showChangelog
+	# ☝️ if $SHOW_CHANGELOG is 'true' then download and display changelog
+	# from https://api.github.com/repos/stripe/stripe-cli/releases/latest
+fi
