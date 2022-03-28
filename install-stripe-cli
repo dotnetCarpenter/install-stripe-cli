@@ -5,7 +5,7 @@
 # Copyright (c) 2022 Jon Ege Ronnenberg
 
 
-set -e -o pipefail
+set -o pipefail
 
 readonly MAJOR=1
 readonly MINOR=0
