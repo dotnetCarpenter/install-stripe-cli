@@ -13,7 +13,7 @@ I wrote [a presentation of `install-stripe-cli`](https://github.com/stripe/strip
 ## Installation
 
 Create a directory where you want to save `install-stripe-cli` and keep the `stripe-cli` installation.
-Copy/Paste the snippet below into your terminal. That will save the latest release of `install-stripe-cli` and print usage if successfull. Requires that [curl], [wget], [xargs] and [jq] is installed.
+Copy/Paste the snippet below into your terminal. That will save the latest release of `install-stripe-cli` and print usage if successfull. Requires that [curl], [wget], [jq], [xargs] and [b2sum] is installed.
 
 ```bash
 curl -s https://api.github.com/repos/dotnetcarpenter/install-stripe-cli/tags \
@@ -90,7 +90,7 @@ Since keeping _install-stripe-cli-checksums.txt_ in sync with _install-stripe-cl
 + _pre-push_ will only allow `git push` if _install-stripe-cli-checksums.txt_ is up to date.
 + _pre-commit_ will create a new BLAKE2 digest if there is a change to _install-stripe-cli_ and you forgot to run _scripts/create-digest.sh_. It will also add the newly generated _install-stripe-cli-checksums.txt_ to your commit, so they are in sync.
 
-You need to copy both files into _.git/hooks/_ and make them executable, before they take effect.
+You need to copy the files into _.git/hooks/_ and make them executable, before they take effect.
 
 
 [a full year]: https://github.com/stripe/stripe-cli/pull/673#issuecomment-1078892697
@@ -99,6 +99,7 @@ You need to copy both files into _.git/hooks/_ and make them executable, before 
 [curl]: https://curl.se/
 [wget]: https://www.gnu.org/software/wget/
 [xargs]: https://www.gnu.org/software/findutils/xargs/
+[b2sum]: https://www.gnu.org/software/coreutils/
 [jq]: https://stedolan.github.io/jq/
 
 [pacman]: https://archlinux.org/pacman/
