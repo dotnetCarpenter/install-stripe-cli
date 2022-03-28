@@ -37,6 +37,8 @@ usage () {
 	local filename="$0"
 	local long_help="${1:-false}"
 
+	# TODO: change from printf to <<\EOF
+
 	printf "Usage:\n$filename [-h|--help] [-v|--version] [-lps] [-i usr|deb|rpm]\n"
 
 	if [[ $long_help == 'false' ]]; then
@@ -160,8 +162,8 @@ setStripeCliFromFileExtension () {
 	local file_extension=$2
 	local found='false'
 
-	for STRIPE_CLI in ${files[@]}; do
-		if [ $STRIPE_CLI == *.$file_extension ]; then
+	for STRIPE_CLI in "${files[@]}"; do
+		if [[ $STRIPE_CLI == *.$file_extension ]]; then
 			found='true'
 			break;
 		fi
@@ -191,7 +193,7 @@ setStripeCLI () {
 	elif [ $SHOW_PROMPT = 'true' ]; then
 		echo "Please, choose which file to install:"
 
-		select STRIPE_CLI in ${available_files[@]}; do
+		select STRIPE_CLI in "${available_files[@]}"; do
 			if [[ "$REPLY" =~ ^[0-9]+$ ]] && [ "$REPLY" -le $((${#available_files[@]})) ]; then
 				break;
 			else
