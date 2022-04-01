@@ -10,7 +10,8 @@ set -o pipefail
 readonly MAJOR=1
 readonly MINOR=0
 readonly PATCH=2
-readonly VERSION_STRING="$(basename $0) version: $MAJOR.$MINOR.$PATCH"
+readonly VERSION="$MAJOR.$MINOR.$PATCH"
+readonly VERSION_STRING="$(basename $0) version: $VERSION"
 
 readonly CHECKSUM_PROGRAM=sha256sum
 readonly GITHUB_RELEASE_DOWNLOAD_URL='https://github.com/stripe/stripe-cli/releases/latest/download/'
@@ -116,7 +117,7 @@ while getopts ":hvlpsi:" opt
 do
 	case "$opt" in
 		h) usage $LONG_HELP; exit 0;;
-		v) echo $VERSION_STRING; exit 0;;
+		v) echo $VERSION; exit 0;;
 		l) SHOW_CHANGELOG='true';;
 		p) SHOW_PROMPT='true';;
 		i) INSTALLATION_METHOD="${OPTARG}";;
