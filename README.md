@@ -17,10 +17,9 @@ Copy/Paste the snippet below into your terminal. That will save the latest relea
 
 ```bash
 curl -s https://api.github.com/repos/dotnetcarpenter/install-stripe-cli/tags \
-| jq --raw-output 'sort_by(.name)|last|.commit.sha' \
-| (read sha && echo "https://raw.githubusercontent.com/dotnetcarpenter/install-stripe-cli/$sha") \
-| (read url && xargs sh -c "echo $url/install-stripe-cli-checksums.txt && echo $url/install-stripe-cli") \
-| xargs -P 2 wget -qO;
+| jq 'sort_by(.name)|last|.commit.url' | xargs curl -s \
+| jq '.files[]|select(.filename == "install-stripe-cli-checksums.txt" or .filename == "install-stripe-cli").raw_url' \
+| xargs -P 2 wget -q;
 b2sum --status -c install-stripe-cli-checksums.txt && chmod +x install-stripe-cli && ./install-stripe-cli --help
 ```
 
